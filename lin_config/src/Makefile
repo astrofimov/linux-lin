@@ -10,7 +10,7 @@ lin_config: $(objects)
 	$(CC) $(objects) $(LIBS) -o lin_config
 
 %.o : %.c %.h
-	$(CC) $(CFLAGS) $(LIBS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: clean
 clean:
