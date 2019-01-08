@@ -41,8 +41,8 @@
  * Funded by:  Volkswagen Group Research
  */
 
-//#define DEBUG			1 /* Enables pr_debug() printouts */
-//#define SLLIN_LED_TRIGGER /* Enables led triggers */
+#define DEBUG			1 /* Enables pr_debug() printouts */
+#define SLLIN_LED_TRIGGER /* Enables led triggers */
 
 #include <linux/module.h>
 #include <linux/moduleparam.h>
@@ -64,6 +64,7 @@
 #include <linux/kthread.h>
 #include <linux/hrtimer.h>
 #include <linux/version.h>
+#include <uapi/linux/sched/types.h>
 #include "linux/lin_bus.h"
 
 /* Should be in include/linux/tty.h */
@@ -315,6 +316,9 @@ static int sllin_netdev_notifier_call(struct notifier_block *nb, unsigned long m
 	struct net_device *netdev = netdev_notifier_info_to_dev(ptr);
 	struct sllin *sl = netdev_priv_safe(netdev);
 	char name[SLLIN_LED_NAME_SZ];
+
+
+	pr_info("got new device %s\n", netdev->name);
 
 	if (!sl)
 		return NOTIFY_DONE;
@@ -616,7 +620,7 @@ static const struct net_device_ops sll_netdev_ops = {
 static void sll_setup(struct net_device *dev)
 {
 	dev->netdev_ops		= &sll_netdev_ops;
-	dev->destructor		= sll_free_netdev;
+	dev->priv_destructor		= sll_free_netdev;
 
 	dev->hard_header_len	= 0;
 	dev->addr_len		= 0;
@@ -1822,7 +1826,7 @@ static void __exit sllin_exit(void)
 		if (sl->tty) {
 			netdev_dbg(sl->dev, "tty discipline still running\n");
 			/* Intentionally leak the control block. */
-			dev->destructor = NULL;
+			dev->priv_destructor = NULL;
 		}
 
 		unregister_netdev(dev);
